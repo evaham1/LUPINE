@@ -17,11 +17,6 @@ devtools::install_github("https://github.com/SarithaKodikara/LUPINE")
 
 You can view the vignette [here](https://sarithakodikara.github.io/LUPINE/example.html)
 
-Or
-
-```{r}
-browseVignettes("LUPINE")
-```
 
 
 
