@@ -16,6 +16,14 @@
 #'
 LUPINE <- function(data, is.transformed = FALSE, lib_size = NULL, ncomp = 1,
                    single = FALSE, singleMethod = "pca", excluded_taxa = NULL, cutoff = 0.05) {
+  if(length(dim(data)) == 2) {
+    stop("Data should be a 3D array with dimensions samples x taxa x time points")
+  })
+
+  if(colnames(data)== NULL) {
+  stop("Data should have taxa names in columns")
+  })
+
   nDays <- dim(data)[3]
 
   if (single) {
