@@ -37,7 +37,11 @@ LUPINE_single <- function(data, day, excluded_taxa = NULL, is.transformed = FALS
   }
   # Extract count array after excluding taxa
   data_filt <- data[, taxa_names, ]
-  data_day_f <- data_filt[, , day]
+  if(length(dim(data_filt))> 2) {
+    data_filt <- data_filt[, , day]
+  } else {
+    data_filt <- data_filt
+  }
 
   if (method == "pca") {
     loadings_m <- PCA_approx(data_day_f, ncomp = ncomp)
