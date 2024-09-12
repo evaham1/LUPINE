@@ -38,9 +38,9 @@ LUPINE_single <- function(data, day, excluded_taxa = NULL, is.transformed = FALS
   # Extract count array after excluding taxa
   data_filt <- data[, taxa_names, ]
   if(length(dim(data_filt))> 2) {
-    data_filt <- data_filt[, , day]
+    datdata_day_f <- data_filt[, , day]
   } else {
-    data_filt <- data_filt
+    data_day_f <- data_filt
   }
 
   if (method == "pca") {
