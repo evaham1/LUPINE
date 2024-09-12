@@ -20,7 +20,7 @@ LUPINE_bootsrap <- function(data, day_range= NULL, is.transformed = FALSE, lib_s
   nDays <- dim(data)[3]
 
   bootstrap_data<- lapply(1:nboot,function(i){
-    boot_data<- data[sample(1:dim(data)[1], replace = T),,]
+    boot_data<- data[sample(1:dim(data)[1], replace = T),,, drop = FALSE]
     rownames(boot_data)<-rownames(data)
     return(boot_data)
   })
