@@ -19,13 +19,16 @@ LUPINE_single <- function(data,
                           method = "pca",
                           ncomp = 1) {
 
-  # Total number of variables (p)
+  # Extract total number of variables (p)
   nVar_total <- dim(data)[2]
-  # Extract matrix for current time point
+
+  # Extract matrix for the current time point
   data_timepoint <- data[, , timepoint]
-  # Extract taxa names after excluded taxa
+
+  # Extract variable names after excluded variables
   taxa_names <- colnames(data_timepoint)[!(colnames(data_timepoint) %in% excluded_taxa[[timepoint]])]
-  # pairwise taxa combinations
+
+  # pairwise variable combinations
   nVar <- length(taxa_names)
   len <- nVar * (nVar - 1) / 2
   taxa1 <- unlist(lapply(1:nVar, function(i) rep(i, (nVar - i))))
