@@ -16,18 +16,21 @@
 #'
 LUPINE <- function(data, is.transformed = FALSE, lib_size = NULL, ncomp = 1,
                    single = FALSE, singleMethod = "pca", excluded_taxa = NULL, cutoff = 0.05) {
-  if(length(dim(data)) == 2) {
+
+  # Checks
+  if(length(dim(data)) != 3) {
     stop("Data should be a 3D array with dimensions samples x taxa x time points")
   }
-
   if(is.null(colnames(data))) {
-  stop("Data should have taxa names in columns")
+  stop("Data should have variable names in columns")
   }
 
-  nDays <- dim(data)[3]
+  # extract number of timepoints
+  nTimepoints <- dim(data)[3]
 
+  # call LUPINE_single or LUPINE_longitudinal functions
   if (single) {
-    res <- sapply(1:nDays, function(d) {
+    res <- sapply(1:nTimepoints, function(d) {
       net <- LUPINE_single(data,
         day = d, excluded_taxa, is.transformed, lib_size,
         method = singleMethod, ncomp
@@ -38,7 +41,7 @@ LUPINE <- function(data, is.transformed = FALSE, lib_size = NULL, ncomp = 1,
       return(net)
     }, simplify = FALSE)
   } else {
-    res <- sapply(2:nDays, function(d) {
+    res <- sapply(2:nTimepoints, function(d) {
       net <- LUPINE_longitudinal(data,
         day = d, excluded_taxa, is.transformed,
         lib_size, ncomp
