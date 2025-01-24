@@ -9,7 +9,6 @@ debug(LUPINE)
 debug(LUPINE_single)
 
 # try what is the difference for is.transformed TRUE/FALSE
-data <- HFHSdata$OTUdata_Normal
 net_Normal <- LUPINE(HFHSdata$OTUdata_Normal,
                      is.transformed = FALSE,
                      lib_size = HFHSdata$Lib_Normal,

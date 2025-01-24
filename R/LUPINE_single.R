@@ -1,7 +1,7 @@
 #' LUPINE for single time point
 #'
 #' @param data A 3D array of counts or transformed data with dimensions samples x taxa x time points
-#' @param day The time point for which the correlations are calculated
+#' @param timepoint The time point for which the correlations are calculated
 #' @param excluded_taxa A list of taxa to be excluded at each time point
 #' @param is.transformed A logical indicating whether the data is transformed or not
 #' @param lib_size A matrix of library sizes for each sample and time point
@@ -11,14 +11,19 @@
 #' @return A list of correlations and p-values
 #' @export
 #'
-LUPINE_single <- function(data, day, excluded_taxa = NULL, is.transformed = FALSE, lib_size = NULL,
-                          method = "pca", ncomp = 1) {
+LUPINE_single <- function(data,
+                          timepoint,
+                          excluded_taxa = NULL,
+                          is.transformed = FALSE,
+                          lib_size = NULL,
+                          method = "pca",
+                          ncomp = 1) {
   # Total number of taxa (p)
   nOTU_total <- dim(data)[2]
   # Extract matrix for current time point
-  data_day <- data[, , day]
+  data_timepoint <- data[, , timepoint]
   # Extract taxa names after excluded taxa
-  taxa_names <- colnames(data_day)[!(colnames(data_day) %in% excluded_taxa[[day]])]
+  taxa_names <- colnames(data_timepoint)[!(colnames(data_timepoint) %in% excluded_taxa[[timepoint]])]
   # pairwise taxa combinations
   nOTU <- length(taxa_names)
   len <- nOTU * (nOTU - 1) / 2
@@ -38,17 +43,17 @@ LUPINE_single <- function(data, day, excluded_taxa = NULL, is.transformed = FALS
   # Extract count array after excluding taxa
   data_filt <- data[, taxa_names, ]
   if(length(dim(data_filt))> 2) {
-    data_day_f <- data_filt[, , day]
+    data_timepoint_f <- data_filt[, , timepoint]
   } else {
-    data_day_f <- data_filt
+    data_timepoint_f <- data_filt
   }
 
   if (method == "pca") {
-    loadings_m <- PCA_approx(data_day_f, ncomp = ncomp)
+    loadings_m <- PCA_approx(data_timepoint_f, ncomp = ncomp)
   } else if (method == "ica") {
-    loadings_m <- RPCA_approx(data_day_f, ncomp = ncomp)
+    loadings_m <- RPCA_approx(data_timepoint_f, ncomp = ncomp)
   } else if (method == "rpca") {
-    loadings_m <- ICA_approx(data_day_f, ncomp = ncomp)
+    loadings_m <- ICA_approx(data_timepoint_f, ncomp = ncomp)
   } else {
     stop("Method not supported\n. Use one of pca, ica, rpca.")
   }
@@ -57,17 +62,17 @@ LUPINE_single <- function(data, day, excluded_taxa = NULL, is.transformed = FALS
     # print(i)
     loading_tmp <- loadings_m
     loading_tmp[c(taxa1[i], taxa2[i]), ] <- 0
-    u1 <- scale(data_day_f, center = TRUE, scale = TRUE) %*% loading_tmp
+    u1 <- scale(data_timepoint_f, center = TRUE, scale = TRUE) %*% loading_tmp
     if (!is.transformed) {
       ##** LUPINE_single with counts**##
       # principal component regression on log counts+1 with an offset for library size
-      r_i <- lm(log(data_day_f[, taxa1[i]] + 1) ~ u1, offset = log(lib_size[, day]))
-      r_j <- lm(log(data_day_f[, taxa2[i]] + 1) ~ u1, offset = log(lib_size[, day]))
+      r_i <- lm(log(data_timepoint_f[, taxa1[i]] + 1) ~ u1, offset = log(lib_size[, timepoint]))
+      r_j <- lm(log(data_timepoint_f[, taxa2[i]] + 1) ~ u1, offset = log(lib_size[, timepoint]))
     } else {
       ##** LUPINE_single with clr**##
       # principal component regression on clr
-      r_i <- lm(data_day_f[, taxa1[i]] ~ u1)
-      r_j <- lm(data_day_f[, taxa2[i]] ~ u1)
+      r_i <- lm(data_timepoint_f[, taxa1[i]] ~ u1)
+      r_j <- lm(data_timepoint_f[, taxa2[i]] ~ u1)
     }
     # partial correlation calculation
     pcor[taxa1[i], taxa2[i]] <- pcor[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals,
@@ -82,8 +87,8 @@ LUPINE_single <- function(data, day, excluded_taxa = NULL, is.transformed = FALS
 
   pcor.full <- matrix(NA, nrow = nOTU_total, ncol = nOTU_total)
   pcor.pval.full <- matrix(NA, nrow = nOTU_total, ncol = nOTU_total)
-  colnames(pcor.full) <- colnames(pcor.pval.full) <- colnames(data_day)
-  rownames(pcor.full) <- rownames(pcor.pval.full) <- colnames(data_day)
+  colnames(pcor.full) <- colnames(pcor.pval.full) <- colnames(data_timepoint)
+  rownames(pcor.full) <- rownames(pcor.pval.full) <- colnames(data_timepoint)
 
   common_rows_cols <- intersect(rownames(pcor.full), rownames(pcor))
 

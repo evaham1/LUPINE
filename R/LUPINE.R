@@ -32,8 +32,12 @@ LUPINE <- function(data, is.transformed = FALSE, lib_size = NULL, ncomp = 1,
   if (single) {
     res <- sapply(1:nTimepoints, function(d) {
       net <- LUPINE_single(data,
-        day = d, excluded_taxa, is.transformed, lib_size,
-        method = singleMethod, ncomp
+                           timepoint = d,
+                           excluded_taxa,
+                           is.transformed,
+                           lib_size,
+                           method = singleMethod,
+                           ncomp
       )$pvalue
       net <- apply(net<cutoff, c(1, 2), function(x) {
         ifelse(is.na(x), 0, x)
