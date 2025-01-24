@@ -13,7 +13,7 @@ net_Normal <- LUPINE(HFHSdata$OTUdata_Normal,
                      is.transformed = FALSE,
                      lib_size = HFHSdata$Lib_Normal,
                      ncomp = 1, single = TRUE,
-                     excluded_taxa = HFHSdata$low_Normal_taxa,
+                     excluded_var = HFHSdata$low_Normal_var,
                      cutoff = 0.05
 )
 
@@ -29,7 +29,7 @@ cutoff = 0.05
 res <- sapply(1:4, function(d) {
   net <- LUPINE_single(HFHSdata$OTUdata_Normal,
                        timepoint = d,
-                       excluded_taxa = HFHSdata$low_Normal_taxa,
+                       excluded_var = HFHSdata$low_Normal_var,
                        is.transformed = FALSE,
                        lib_size = HFHSdata$Lib_Normal,
                        ncomp = 1
@@ -51,7 +51,7 @@ table(res[[1]])
 res <- sapply(1:4, function(d) {
   net <- LUPINE_single(HFHSdata$OTUdata_Normal,
                      timepoint = d,
-                     excluded_taxa = HFHSdata$low_Normal_taxa,
+                     excluded_var = HFHSdata$low_Normal_var,
                      is.transformed = FALSE,
                      lib_size = HFHSdata$Lib_Normal,
                      ncomp = 1)
@@ -71,9 +71,9 @@ res[[1]][1:4, 1:4]
 data_first_timepoint <- HFHSdata$OTUdata_Normal[, , 1]
 dim(data_first_timepoint) # 23 x 212
 
-# filter taxa in that data
-taxa_names <- colnames(data_first_timepoint)[!(colnames(data_first_timepoint) %in% HFHSdata$low_Normal_taxa[[1]])]
-data_first_timepoint <- data_first_timepoint[, taxa_names]
+# filter var in that data
+var_names <- colnames(data_first_timepoint)[!(colnames(data_first_timepoint) %in% HFHSdata$low_Normal_var[[1]])]
+data_first_timepoint <- data_first_timepoint[, var_names]
 dim(data_first_timepoint) # 23, 102
 
 # run modified LUPINE after filtering

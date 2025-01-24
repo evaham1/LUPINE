@@ -18,7 +18,7 @@ LUPINE_single_timepoint(
 
 \item{ncomp}{The number of components to use for dimensionality reduction}
 
-\item{data}{A 2D array of counts or transformed data with dimensions samples x taxa}
+\item{data}{A 2D array of counts or transformed data with dimensions samples x variables}
 }
 \value{
 A list of correlations and p-values
