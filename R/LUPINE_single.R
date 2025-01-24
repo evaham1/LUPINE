@@ -18,21 +18,22 @@ LUPINE_single <- function(data,
                           lib_size = NULL,
                           method = "pca",
                           ncomp = 1) {
-  # Total number of taxa (p)
-  nOTU_total <- dim(data)[2]
+
+  # Total number of variables (p)
+  nVar_total <- dim(data)[2]
   # Extract matrix for current time point
   data_timepoint <- data[, , timepoint]
   # Extract taxa names after excluded taxa
   taxa_names <- colnames(data_timepoint)[!(colnames(data_timepoint) %in% excluded_taxa[[timepoint]])]
   # pairwise taxa combinations
-  nOTU <- length(taxa_names)
-  len <- nOTU * (nOTU - 1) / 2
-  taxa1 <- unlist(lapply(1:nOTU, function(i) rep(i, (nOTU - i))))
-  taxa2 <- unlist(lapply(2:nOTU, function(i) seq(i, nOTU, 1)))
+  nVar <- length(taxa_names)
+  len <- nVar * (nVar - 1) / 2
+  taxa1 <- unlist(lapply(1:nVar, function(i) rep(i, (nVar - i))))
+  taxa2 <- unlist(lapply(2:nVar, function(i) seq(i, nVar, 1)))
 
   # Initialisation
-  pcor <- matrix(NA, nrow = nOTU, ncol = nOTU)
-  pcor.pval <- matrix(NA, nrow = nOTU, ncol = nOTU)
+  pcor <- matrix(NA, nrow = nVar, ncol = nVar)
+  pcor.pval <- matrix(NA, nrow = nVar, ncol = nVar)
   colnames(pcor) <- colnames(pcor.pval) <- taxa_names
   rownames(pcor) <- rownames(pcor.pval) <- taxa_names
 
@@ -85,8 +86,8 @@ LUPINE_single <- function(data,
     )$p.value
   }
 
-  pcor.full <- matrix(NA, nrow = nOTU_total, ncol = nOTU_total)
-  pcor.pval.full <- matrix(NA, nrow = nOTU_total, ncol = nOTU_total)
+  pcor.full <- matrix(NA, nrow = nVar_total, ncol = nVar_total)
+  pcor.pval.full <- matrix(NA, nrow = nVar_total, ncol = nVar_total)
   colnames(pcor.full) <- colnames(pcor.pval.full) <- colnames(data_timepoint)
   rownames(pcor.full) <- rownames(pcor.pval.full) <- colnames(data_timepoint)
 
