@@ -94,3 +94,11 @@ length(net)
 dim(net[[1]])
 net[[1]][1:4, 1:4] # different values because not accounted for lib size and not log transformed counts
 
+
+
+create_lib_size(data_first_timepoint)
+create_lib_size("HFHSdata$OTUdata_Normal")
+
+
+dim(HFHSdata$OTUdata_Normal)
+

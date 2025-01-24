@@ -28,12 +28,6 @@ LUPINE_single_timepoint <- function(data_timepoint,
   colnames(pcor) <- colnames(pcor.pval) <- taxa_names
   rownames(pcor) <- rownames(pcor.pval) <- taxa_names
 
-  # This should be calculated outside the LUPINE function
-  # Creating library size by summing taxa counts per sample and time point
-  # if (is.null(lib_size) & !is.transformed) {
-  #   lib_size <- apply(data, c(1, 3), sum)
-  # }
-
   # Run 1 dimensional approximation
   if (method == "pca") {
     loadings_m <- PCA_approx(data_timepoint, ncomp = ncomp)
