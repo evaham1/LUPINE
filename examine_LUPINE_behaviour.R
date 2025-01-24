@@ -78,18 +78,19 @@ dim(data_first_timepoint) # 23, 102
 
 # run modified LUPINE after filtering
 net <- LUPINE_single_timepoint(data_first_timepoint,
-                       is.transformed = FALSE,
-                       lib_size = HFHSdata$Lib_Normal,
+                       lib_size = HFHSdata$Lib_Normal[, 1],
                        ncomp = 1)
 
+# check outputs are the same as above
+length(net)
+dim(net[[1]])
+net[[1]][1:4, 1:4]
 
+# run modified LUPINE after filtering with no libsize
+net <- LUPINE_single_timepoint(data_first_timepoint,
+                               ncomp = 1)
 
-# check outputs
-length(res)
-dim(res[[1]])
-res[[1]][1:4, 1:4]
-
-
-
-
+length(net)
+dim(net[[1]])
+net[[1]][1:4, 1:4] # different values because not accounted for lib size and not log transformed counts
 

@@ -5,28 +5,20 @@
 \title{LUPINE for single time point}
 \usage{
 LUPINE_single_timepoint(
-  data,
-  excluded_taxa = NULL,
-  is.transformed = FALSE,
+  data_timepoint,
   lib_size = NULL,
   method = "pca",
   ncomp = 1
 )
 }
 \arguments{
-\item{data}{A 2D array of counts or transformed data with dimensions samples x taxa}
-
-\item{excluded_taxa}{A list of taxa to be excluded at each time point}
-
-\item{is.transformed}{A logical indicating whether the data is transformed or not}
-
-\item{lib_size}{A matrix of library sizes for each sample and time point}
+\item{lib_size}{A matrix of library sizes for each sample and time point, optional. Currently if used regression models will be run on log+1 and libsize accounted for}
 
 \item{method}{The method to use for dimensionality reduction. Options are "pca", "ica", "rpca"}
 
 \item{ncomp}{The number of components to use for dimensionality reduction}
 
-\item{timepoint}{The time point for which the correlations are calculated}
+\item{data}{A 2D array of counts or transformed data with dimensions samples x taxa}
 }
 \value{
 A list of correlations and p-values

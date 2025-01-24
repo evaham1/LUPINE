@@ -1,8 +1,7 @@
 #' LUPINE for single time point
 #'
 #' @param data A 2D array of counts or transformed data with dimensions samples x taxa
-#' @param is.transformed A logical indicating whether the data is transformed or not
-#' @param lib_size A matrix of library sizes for each sample and time point
+#' @param lib_size A matrix of library sizes for each sample and time point, optional. Currently if used regression models will be run on log+1 and libsize accounted for
 #' @param method The method to use for dimensionality reduction. Options are "pca", "ica", "rpca"
 #' @param ncomp The number of components to use for dimensionality reduction
 #'
@@ -10,7 +9,6 @@
 #' @export
 #'
 LUPINE_single_timepoint <- function(data_timepoint,
-                                    is.transformed = FALSE,
                                     lib_size = NULL,
                                     method = "pca",
                                     ncomp = 1) {
@@ -30,11 +28,13 @@ LUPINE_single_timepoint <- function(data_timepoint,
   colnames(pcor) <- colnames(pcor.pval) <- taxa_names
   rownames(pcor) <- rownames(pcor.pval) <- taxa_names
 
+  # This should be calculated outside the LUPINE function
   # Creating library size by summing taxa counts per sample and time point
   # if (is.null(lib_size) & !is.transformed) {
   #   lib_size <- apply(data, c(1, 3), sum)
   # }
 
+  # Run 1 dimensional approximation
   if (method == "pca") {
     loadings_m <- PCA_approx(data_timepoint, ncomp = ncomp)
   } else if (method == "ica") {
@@ -45,21 +45,22 @@ LUPINE_single_timepoint <- function(data_timepoint,
     stop("Method not supported\n. Use one of pca, ica, rpca.")
   }
 
-  for (i in 1:len) {
+  # Apply two indepdent log linear regression models for each combination of variables
+  for (i in 1:len) { # loop through each pairwise combination
     # print(i)
     loading_tmp <- loadings_m
-    loading_tmp[c(taxa1[i], taxa2[i]), ] <- 0
+    loading_tmp[c(taxa1[i], taxa2[i]), ] <- 0 # loading vectors with the key variables removed
     u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
-    if (!is.transformed) {
-      ##** LUPINE_single with counts**##
-      # principal component regression on log counts+1 with an offset for library size
-      r_i <- lm(log(data_timepoint[, taxa1[i]] + 1) ~ u1, offset = log(lib_size[, 1]))
-      r_j <- lm(log(data_timepoint[, taxa2[i]] + 1) ~ u1, offset = log(lib_size[, 1]))
-    } else {
-      ##** LUPINE_single with clr**##
-      # principal component regression on clr
+    if (is.null(lib_size)) {
+      # principal component regression directly on counts
+      print("No library size detected, continuing without accounting for library size...")
       r_i <- lm(data_timepoint[, taxa1[i]] ~ u1)
       r_j <- lm(data_timepoint[, taxa2[i]] ~ u1)
+    } else {
+      # principal component regression on log counts+1 with an offset for library size
+      print("Library size detected, accounting for library size...")
+      r_i <- lm(log(data_timepoint[, taxa1[i]] + 1) ~ u1, offset = log(lib_size))
+      r_j <- lm(log(data_timepoint[, taxa2[i]] + 1) ~ u1, offset = log(lib_size))
     }
 
     # partial correlation calculation
