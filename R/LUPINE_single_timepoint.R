@@ -40,32 +40,33 @@ LUPINE_single_timepoint <- function(data_timepoint,
   }
 
   # Apply two indepdent log linear regression models for each combination of variables
-  for (i in 1:len) { # loop through each pairwise combination
-    # print(i)
-    loading_tmp <- loadings_m
-    loading_tmp[c(taxa1[i], taxa2[i]), ] <- 0 # loading vectors with the key variables removed
-    u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
-    if (is.null(lib_size)) {
-      # principal component regression directly on counts
+  if (is.null(lib_size)) {
+    for (i in 1:len) { # loop through each pairwise combination
+      loading_tmp <- loadings_m
+      loading_tmp[c(taxa1[i], taxa2[i]), ] <- 0 # loading vectors with the key variables removed
+      u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
       print("No library size detected, continuing without accounting for library size...")
       r_i <- lm(data_timepoint[, taxa1[i]] ~ u1)
       r_j <- lm(data_timepoint[, taxa2[i]] ~ u1)
-    } else {
-      # principal component regression on log counts+1 with an offset for library size
-      print("Library size detected, accounting for library size...")
-      r_i <- lm(log(data_timepoint[, taxa1[i]] + 1) ~ u1, offset = log(lib_size))
-      r_j <- lm(log(data_timepoint[, taxa2[i]] + 1) ~ u1, offset = log(lib_size))
+      # partial correlation calculation
+      pcor[taxa1[i], taxa2[i]] <- pcor[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
+      )$estimate
+      pcor.pval[taxa1[i], taxa2[i]] <- pcor.pval[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
+      )$p.value
+    }} else {
+      for (i in 1:len) { # loop through each pairwise combination
+        loading_tmp <- loadings_m
+        loading_tmp[c(taxa1[i], taxa2[i]), ] <- 0 # loading vectors with the key variables removed
+        u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
+        print("Library size detected, accounting for library size...")
+        r_i <- lm(log(data_timepoint[, taxa1[i]] + 1) ~ u1, offset = log(lib_size))
+        r_j <- lm(log(data_timepoint[, taxa2[i]] + 1) ~ u1, offset = log(lib_size))
+        # partial correlation calculation
+        pcor[taxa1[i], taxa2[i]] <- pcor[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
+                                                                         )$estimate
+        pcor.pval[taxa1[i], taxa2[i]] <- pcor.pval[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
+        )$p.value
     }
-
-    # partial correlation calculation
-    pcor[taxa1[i], taxa2[i]] <- pcor[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals,
-                                                                     r_j$residuals,
-                                                                     method = "pearson"
-    )$estimate
-    pcor.pval[taxa1[i], taxa2[i]] <- pcor.pval[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals,
-                                                                               r_j$residuals,
-                                                                               method = "pearson"
-    )$p.value
   }
 
   pcor.full <- matrix(NA, nrow = nVar, ncol = nVar)
@@ -81,4 +82,5 @@ LUPINE_single_timepoint <- function(data_timepoint,
   res <- list(Estimate = pcor.full, pvalue = pcor.pval.full)
 
   return(res)
+
 }

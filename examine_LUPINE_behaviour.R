@@ -5,8 +5,8 @@ library(LUPINE)
 data("HFHSdata")
 
 ## initial testing with LUPINE on single timepoint
-debug(LUPINE)
-debug(LUPINE_single)
+undebug(LUPINE)
+undebug(LUPINE_single)
 
 # run LUPINE_single through LUPINE wrapper
 net_Normal <- LUPINE(HFHSdata$OTUdata_Normal,
