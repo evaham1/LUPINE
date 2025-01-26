@@ -1,6 +1,6 @@
 #' LUPINE for single time point
 #'
-#' @param data A 2D array of counts or transformed data with dimensions samples x taxa
+#' @param data A 2D array of counts or transformed data with dimensions samples x variables
 #' @param lib_size A matrix of library sizes for each sample and time point, optional. Currently if used regression models will be run on log+1 and libsize accounted for
 #' @param method The method to use for dimensionality reduction. Options are "pca", "ica", "rpca"
 #' @param ncomp The number of components to use for dimensionality reduction
@@ -14,8 +14,8 @@ LUPINE_single_timepoint <- function(data_timepoint,
                                     ncomp = 1) {
 
   # Extract variable names
-  taxa_names <- colnames(data_timepoint)
-  nVar <- length(taxa_names)
+  var_names <- colnames(data_timepoint)
+  nVar <- length(var_names)
 
   # Generate pairwise variable combinations
   len <- nVar * (nVar - 1) / 2
@@ -25,8 +25,8 @@ LUPINE_single_timepoint <- function(data_timepoint,
   # Initialisation
   pcor <- matrix(NA, nrow = nVar, ncol = nVar)
   pcor.pval <- matrix(NA, nrow = nVar, ncol = nVar)
-  colnames(pcor) <- colnames(pcor.pval) <- taxa_names
-  rownames(pcor) <- rownames(pcor.pval) <- taxa_names
+  colnames(pcor) <- colnames(pcor.pval) <- var_names
+  rownames(pcor) <- rownames(pcor.pval) <- var_names
 
   # Run 1 dimensional approximation
   if (method == "pca") {
