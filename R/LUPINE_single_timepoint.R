@@ -19,8 +19,8 @@ LUPINE_single_timepoint <- function(data_timepoint,
 
   # Generate pairwise variable combinations
   len <- nVar * (nVar - 1) / 2
-  taxa1 <- unlist(lapply(1:nVar, function(i) rep(i, (nVar - i))))
-  taxa2 <- unlist(lapply(2:nVar, function(i) seq(i, nVar, 1)))
+  var1 <- unlist(lapply(1:nVar, function(i) rep(i, (nVar - i))))
+  var2 <- unlist(lapply(2:nVar, function(i) seq(i, nVar, 1)))
 
   # Initialisation
   pcor <- matrix(NA, nrow = nVar, ncol = nVar)
@@ -43,28 +43,29 @@ LUPINE_single_timepoint <- function(data_timepoint,
   if (is.null(lib_size)) {
     for (i in 1:len) { # loop through each pairwise combination
       loading_tmp <- loadings_m
-      loading_tmp[c(taxa1[i], taxa2[i]), ] <- 0 # loading vectors with the key variables removed
+      loading_tmp[c(var1[i], var2[i]), ] <- 0 # loading vectors with the key variables removed
       u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
       print("No library size detected, continuing without accounting for library size...")
-      r_i <- lm(data_timepoint[, taxa1[i]] ~ u1)
-      r_j <- lm(data_timepoint[, taxa2[i]] ~ u1)
+      r_i <- lm(data_timepoint[, var1[i]] ~ u1)
+      r_j <- lm(data_timepoint[, var2[i]] ~ u1)
       # partial correlation calculation
-      pcor[taxa1[i], taxa2[i]] <- pcor[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
+      pcor[var1[i], var2[i]] <- pcor[var2[i], var1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
       )$estimate
-      pcor.pval[taxa1[i], taxa2[i]] <- pcor.pval[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
+      pcor.pval[var1[i], var2[i]] <- pcor.pval[var2[i], var1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
       )$p.value
+
     }} else {
       for (i in 1:len) { # loop through each pairwise combination
         loading_tmp <- loadings_m
-        loading_tmp[c(taxa1[i], taxa2[i]), ] <- 0 # loading vectors with the key variables removed
+        loading_tmp[c(var1[i], var2[i]), ] <- 0 # loading vectors with the key variables removed
         u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
         print("Library size detected, accounting for library size...")
-        r_i <- lm(log(data_timepoint[, taxa1[i]] + 1) ~ u1, offset = log(lib_size))
-        r_j <- lm(log(data_timepoint[, taxa2[i]] + 1) ~ u1, offset = log(lib_size))
+        r_i <- lm(log(data_timepoint[, var1[i]] + 1) ~ u1, offset = log(lib_size))
+        r_j <- lm(log(data_timepoint[, var2[i]] + 1) ~ u1, offset = log(lib_size))
         # partial correlation calculation
-        pcor[taxa1[i], taxa2[i]] <- pcor[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
+        pcor[var1[i], var2[i]] <- pcor[var2[i], var1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
                                                                          )$estimate
-        pcor.pval[taxa1[i], taxa2[i]] <- pcor.pval[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
+        pcor.pval[var1[i], var2[i]] <- pcor.pval[var2[i], var1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
         )$p.value
     }
   }
