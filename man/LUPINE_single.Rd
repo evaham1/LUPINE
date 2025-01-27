@@ -6,7 +6,7 @@
 \usage{
 LUPINE_single(
   data,
-  timepoint,
+  day,
   excluded_taxa = NULL,
   is.transformed = FALSE,
   lib_size = NULL,
@@ -17,7 +17,7 @@ LUPINE_single(
 \arguments{
 \item{data}{A 3D array of counts or transformed data with dimensions samples x taxa x time points}
 
-\item{timepoint}{The time point for which the correlations are calculated}
+\item{day}{The time point for which the correlations are calculated}
 
 \item{excluded_taxa}{A list of taxa to be excluded at each time point}
 
