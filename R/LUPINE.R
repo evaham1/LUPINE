@@ -7,7 +7,7 @@
 #' @param single A logical indicating whether to use LUPINE for a single time point or longitudinal data
 #' @param singleMethod The method to use for dimensionality reduction for single time point
 #' @param cutoff The cutoff value for the p-value to determine significance of the correlation
-#' @param excluded_taxa A list of taxa to be excluded at each time point
+#' @param excluded_var A list of taxa to be excluded at each time point
 #'
 #'
 #'
@@ -15,7 +15,7 @@
 #' @export
 #'
 LUPINE <- function(data, is.transformed = FALSE, lib_size = NULL, ncomp = 1,
-                   single = FALSE, singleMethod = "pca", excluded_taxa = NULL, cutoff = 0.05) {
+                   single = FALSE, singleMethod = "pca", excluded_var = NULL, cutoff = 0.05) {
 
   # Checks
   if(length(dim(data)) != 3) {
@@ -33,7 +33,7 @@ LUPINE <- function(data, is.transformed = FALSE, lib_size = NULL, ncomp = 1,
     res <- sapply(1:nTimepoints, function(d) {
       net <- LUPINE_single(data,
                            timepoint = d,
-                           excluded_taxa,
+                           excluded_var,
                            is.transformed,
                            lib_size,
                            method = singleMethod,
@@ -47,7 +47,7 @@ LUPINE <- function(data, is.transformed = FALSE, lib_size = NULL, ncomp = 1,
   } else {
     res <- sapply(2:nTimepoints, function(d) {
       net <- LUPINE_longitudinal(data,
-        day = d, excluded_taxa, is.transformed,
+        day = d, excluded_var, is.transformed,
         lib_size, ncomp
       )$pvalue
       net <- apply(net<cutoff, c(1, 2), function(x) {

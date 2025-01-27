@@ -11,7 +11,7 @@ LUPINE(
   ncomp = 1,
   single = FALSE,
   singleMethod = "pca",
-  excluded_taxa = NULL,
+  excluded_var = NULL,
   cutoff = 0.05
 )
 }
@@ -28,7 +28,7 @@ LUPINE(
 
 \item{singleMethod}{The method to use for dimensionality reduction for single time point}
 
-\item{excluded_taxa}{A list of taxa to be excluded at each time point}
+\item{excluded_var}{A list of taxa to be excluded at each time point}
 
 \item{cutoff}{The cutoff value for the p-value to determine significance of the correlation}
 }
