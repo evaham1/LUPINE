@@ -57,6 +57,9 @@ res <- sapply(1:4, function(d) {
                      ncomp = 1)
 })
 dim(res) # 2, 4
+res$pvalue
+
+
 dim(res[[1]]) # 212, 212
 res[[1]][1:4, 1:4]
 # OTU_3       OTU_7      OTU_8       OTU_5
@@ -84,7 +87,9 @@ net <- LUPINE_single_timepoint(data_first_timepoint,
 # check outputs are the same as above
 length(net)
 dim(net[[1]])
-net[[1]][1:4, 1:4]
+net[[1]][1:4, 1:4] # Estimates
+dim(net[[2]])
+net[[2]][1:4, 1:4] # p-values
 
 # run modified LUPINE after filtering with no libsize
 net <- LUPINE_single_timepoint(data_first_timepoint, ncomp = 1)
@@ -92,7 +97,7 @@ net <- LUPINE_single_timepoint(data_first_timepoint, ncomp = 1)
 length(net)
 dim(net[[1]])
 net[[1]][1:4, 1:4] # different values because not accounted for lib size and not log transformed counts
-
+net[[2]][1:4, 1:4]
 
 create_lib_size(data_first_timepoint)
 create_lib_size("HFHSdata$OTUdata_Normal")
