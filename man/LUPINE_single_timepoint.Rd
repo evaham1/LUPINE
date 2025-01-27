@@ -13,7 +13,8 @@ LUPINE_single_timepoint(
 )
 }
 \arguments{
-\item{lib_size}{A matrix of library sizes for each sample and time point, optional. Currently if used regression models will be run on log+1 and libsize accounted for}
+\item{lib_size}{A matrix of library sizes for each sample and time point, optional. 
+If used, regression models will be run on log-transformed data with library size as an offset.}
 
 \item{method}{The method to use for dimensionality reduction. Options are "pca", "ica", "rpca"}
 
