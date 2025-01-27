@@ -8,7 +8,8 @@ LUPINE_single_timepoint(
   data_timepoint,
   lib_size = NULL,
   method = "pca",
-  ncomp = 1
+  ncomp = 1,
+  BPPARAM = SerialParam()
 )
 }
 \arguments{
@@ -18,7 +19,9 @@ LUPINE_single_timepoint(
 
 \item{ncomp}{The number of components to use for dimensionality reduction}
 
-\item{data}{A 2D array of counts or transformed data with dimensions samples x taxa}
+\item{BPPARAM}{A \linkS4class{BiocParallelParam} object indicating the type of parallelisation}
+
+\item{data}{A 2D array of counts or transformed data with dimensions samples x variables}
 }
 \value{
 A list of correlations and p-values

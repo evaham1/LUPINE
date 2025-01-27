@@ -4,14 +4,16 @@
 #' @param lib_size A matrix of library sizes for each sample and time point, optional. Currently if used regression models will be run on log+1 and libsize accounted for
 #' @param method The method to use for dimensionality reduction. Options are "pca", "ica", "rpca"
 #' @param ncomp The number of components to use for dimensionality reduction
-#'
+#' @param BPPARAM A \linkS4class{BiocParallelParam} object indicating the type of parallelisation
+#
 #' @return A list of correlations and p-values
 #' @export
 #'
 LUPINE_single_timepoint <- function(data_timepoint,
                                     lib_size = NULL,
                                     method = "pca",
-                                    ncomp = 1) {
+                                    ncomp = 1,
+                                    BPPARAM = SerialParam()) {
 
   # Extract variable names
   var_names <- colnames(data_timepoint)
@@ -42,7 +44,7 @@ LUPINE_single_timepoint <- function(data_timepoint,
   # Apply two indepdent log linear regression models for each combination of variables
   if (is.null(lib_size)) {
     print("No library size detected, continuing without accounting for library size...")
-    pcor_list <- sapply(1:len, function(i) { # apply through each pairwise combination
+    pcor_list <- bplapply(1:len, function(i) { # apply through each pairwise combination
       loading_tmp <- loadings_m
       loading_tmp[c(var1[i], var2[i]), ] <- 0 # loading vectors with the key variables removed
       u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
@@ -55,14 +57,14 @@ LUPINE_single_timepoint <- function(data_timepoint,
         pcor_estimate = cor.test(r_i$residuals, r_j$residuals, method = "pearson")$estimate,
         pcor_pval = cor.test(r_i$residuals, r_j$residuals, method = "pearson")$p.value
       )
-    }, simplify = FALSE)
+    }, BPPARAM = BPPARAM)
     for (result in pcor_list) {
       pcor[result$var1, result$var2] <- pcor[result$var2, result$var1] <- result$pcor_estimate
       pcor.pval[result$var1, result$var2] <- pcor.pval[result$var2, result$var1] <- result$pcor_pval
     }
   } else {
     print("Library size detected, accounting for library size...")
-    pcor_list <- sapply(1:len, function(i) { # apply through each pairwise combination
+    pcor_list <- bplapply(1:len, function(i) { # apply through each pairwise combination
       loading_tmp <- loadings_m
       loading_tmp[c(var1[i], var2[i]), ] <- 0 # loading vectors with the key variables removed
       u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
@@ -75,7 +77,7 @@ LUPINE_single_timepoint <- function(data_timepoint,
         pcor_estimate = cor.test(r_i$residuals, r_j$residuals, method = "pearson")$estimate,
         pcor_pval = cor.test(r_i$residuals, r_j$residuals, method = "pearson")$p.value
       )
-    }, simplify = FALSE)
+    }, BPPARAM = BPPARAM)
     for (result in pcor_list) {
       pcor[result$var1, result$var2] <- pcor[result$var2, result$var1] <- result$pcor_estimate
       pcor.pval[result$var1, result$var2] <- pcor.pval[result$var2, result$var1] <- result$pcor_pval
