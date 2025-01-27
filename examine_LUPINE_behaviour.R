@@ -87,13 +87,11 @@ dim(net[[1]])
 net[[1]][1:4, 1:4]
 
 # run modified LUPINE after filtering with no libsize
-net <- LUPINE_single_timepoint(data_first_timepoint,
-                               ncomp = 1)
+net <- LUPINE_single_timepoint(data_first_timepoint, ncomp = 1)
 
 length(net)
 dim(net[[1]])
 net[[1]][1:4, 1:4] # different values because not accounted for lib size and not log transformed counts
-
 
 
 create_lib_size(data_first_timepoint)

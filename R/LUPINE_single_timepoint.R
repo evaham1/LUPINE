@@ -41,34 +41,47 @@ LUPINE_single_timepoint <- function(data_timepoint,
 
   # Apply two indepdent log linear regression models for each combination of variables
   if (is.null(lib_size)) {
-    for (i in 1:len) { # loop through each pairwise combination
+    print("No library size detected, continuing without accounting for library size...")
+    pcor_list <- sapply(1:len, function(i) { # apply through each pairwise combination
       loading_tmp <- loadings_m
       loading_tmp[c(var1[i], var2[i]), ] <- 0 # loading vectors with the key variables removed
       u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
-      print("No library size detected, continuing without accounting for library size...")
       r_i <- lm(data_timepoint[, var1[i]] ~ u1)
       r_j <- lm(data_timepoint[, var2[i]] ~ u1)
       # partial correlation calculation
-      pcor[var1[i], var2[i]] <- pcor[var2[i], var1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
-      )$estimate
-      pcor.pval[var1[i], var2[i]] <- pcor.pval[var2[i], var1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
-      )$p.value
-
-    }} else {
-      for (i in 1:len) { # loop through each pairwise combination
-        loading_tmp <- loadings_m
-        loading_tmp[c(var1[i], var2[i]), ] <- 0 # loading vectors with the key variables removed
-        u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
-        print("Library size detected, accounting for library size...")
-        r_i <- lm(log(data_timepoint[, var1[i]] + 1) ~ u1, offset = log(lib_size))
-        r_j <- lm(log(data_timepoint[, var2[i]] + 1) ~ u1, offset = log(lib_size))
-        # partial correlation calculation
-        pcor[var1[i], var2[i]] <- pcor[var2[i], var1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
-                                                                         )$estimate
-        pcor.pval[var1[i], var2[i]] <- pcor.pval[var2[i], var1[i]] <- cor.test(r_i$residuals, r_j$residuals, method = "pearson"
-        )$p.value
+      list(
+        var1 = var1[i],
+        var2 = var2[i],
+        pcor_estimate = cor.test(r_i$residuals, r_j$residuals, method = "pearson")$estimate,
+        pcor_pval = cor.test(r_i$residuals, r_j$residuals, method = "pearson")$p.value
+      )
+    }, simplify = FALSE)
+    for (result in pcor_list) {
+      pcor[result$var1, result$var2] <- pcor[result$var2, result$var1] <- result$pcor_estimate
+      pcor.pval[result$var1, result$var2] <- pcor.pval[result$var2, result$var1] <- result$pcor_pval
+    }
+  } else {
+    print("Library size detected, accounting for library size...")
+    pcor_list <- sapply(1:len, function(i) { # apply through each pairwise combination
+      loading_tmp <- loadings_m
+      loading_tmp[c(var1[i], var2[i]), ] <- 0 # loading vectors with the key variables removed
+      u1 <- scale(data_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
+      r_i <- lm(log(data_timepoint[, var1[i]] + 1) ~ u1, offset = log(lib_size))
+      r_j <- lm(log(data_timepoint[, var2[i]] + 1) ~ u1, offset = log(lib_size))
+      # partial correlation calculation
+      list(
+        var1 = var1[i],
+        var2 = var2[i],
+        pcor_estimate = cor.test(r_i$residuals, r_j$residuals, method = "pearson")$estimate,
+        pcor_pval = cor.test(r_i$residuals, r_j$residuals, method = "pearson")$p.value
+      )
+    }, simplify = FALSE)
+    for (result in pcor_list) {
+      pcor[result$var1, result$var2] <- pcor[result$var2, result$var1] <- result$pcor_estimate
+      pcor.pval[result$var1, result$var2] <- pcor.pval[result$var2, result$var1] <- result$pcor_pval
     }
   }
+
 
   pcor.full <- matrix(NA, nrow = nVar, ncol = nVar)
   pcor.pval.full <- matrix(NA, nrow = nVar, ncol = nVar)
