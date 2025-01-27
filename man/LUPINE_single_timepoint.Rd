@@ -8,15 +8,19 @@ LUPINE_single_timepoint(
   data_timepoint,
   lib_size = NULL,
   method = "pca",
-  ncomp = 1
+  ncomp = 1,
+  BPPARAM = SerialParam()
 )
 }
 \arguments{
-\item{lib_size}{A matrix of library sizes for each sample and time point, optional. Currently if used regression models will be run on log+1 and libsize accounted for}
+\item{lib_size}{A matrix of library sizes for each sample and time point, optional. 
+If used, regression models will be run on log-transformed data with library size as an offset.}
 
 \item{method}{The method to use for dimensionality reduction. Options are "pca", "ica", "rpca"}
 
 \item{ncomp}{The number of components to use for dimensionality reduction}
+
+\item{BPPARAM}{A \linkS4class{BiocParallelParam} object indicating the type of parallelisation}
 
 \item{data}{A 2D array of counts or transformed data with dimensions samples x variables}
 }
