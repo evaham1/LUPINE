@@ -5,8 +5,8 @@ library(LUPINE)
 data("HFHSdata")
 
 ## initial testing with LUPINE on single timepoint
-undebug(LUPINE)
-undebug(LUPINE_single)
+debug(LUPINE)
+debug(LUPINE_single)
 
 # run LUPINE_single through LUPINE wrapper
 net_Normal <- LUPINE(HFHSdata$OTUdata_Normal,
@@ -29,7 +29,7 @@ cutoff = 0.05
 res <- sapply(1:4, function(d) {
   net <- LUPINE_single(HFHSdata$OTUdata_Normal,
                        timepoint = d,
-                       excluded_var = HFHSdata$low_Normal_var,
+                       excluded_taxa = HFHSdata$low_Normal_var,
                        is.transformed = FALSE,
                        lib_size = HFHSdata$Lib_Normal,
                        ncomp = 1
@@ -50,8 +50,8 @@ table(res[[1]])
 ## simplify further - remove the cutoff filtering step for now
 res <- sapply(1:4, function(d) {
   net <- LUPINE_single(HFHSdata$OTUdata_Normal,
-                     timepoint = d,
-                     excluded_var = HFHSdata$low_Normal_var,
+                     day = d,
+                     excluded_taxa = HFHSdata$low_Normal_var,
                      is.transformed = FALSE,
                      lib_size = HFHSdata$Lib_Normal,
                      ncomp = 1)
@@ -80,6 +80,7 @@ data_first_timepoint <- data_first_timepoint[, var_names]
 dim(data_first_timepoint) # 23, 102
 
 # run modified LUPINE after filtering
+library(BiocParallel)
 net <- LUPINE_single_timepoint(data_first_timepoint,
                        lib_size = HFHSdata$Lib_Normal[, 1],
                        ncomp = 1)
