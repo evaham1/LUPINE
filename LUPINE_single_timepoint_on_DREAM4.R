@@ -39,19 +39,21 @@ network <- apply(res[[2]], c(1, 2), function(x) {
 
 ### Read in ground-truth network
 goldstandard <- readRDS("~/dev/repos/LUPINE/data/DREAM4/DREAM4_network_1_goldstandard.RDS")
+
+## do some checks on both networks
 class(network)
 class(goldstandard)
+
 dim(network)
 dim(goldstandard)
 
-# total number of interactions 346 - way more
 sum(network == 1, na.rm = TRUE) / 2 # 346
 sum(goldstandard == 1, na.rm = TRUE) / 2 # 168
-diag(goldstandard) <- 0
-any(is.na(network)) # TRUE - why is this??
-network[is.na(network)] <- 0
-any(is.na(goldstandard)) # FALSE
+
+diag(network) <- 0
 any(is.na(network)) # FALSE
+diag(goldstandard) <- 0
+any(is.na(goldstandard)) # FALSE
 
 ### Compare network to ground truth - network distance
 dst <- distance_matrix(list(goldstandard, network))
@@ -92,48 +94,25 @@ extract_interactions <- function(mat) {
   )
 }
 
-LUPINE_interactions <- extract_interactions(network)
-Gold_interactions <- extract_interactions(goldstandard)
+LUPINE_interactions <- extract_interactions(network) %>%
+  mutate(Pair = ifelse(Var1 < Var2, paste(Var1, Var2, sep = "_"), paste(Var2, Var1, sep = "_"))) %>%
+  distinct(Pair)
+
+Gold_interactions <- extract_interactions(goldstandard) %>%
+  mutate(Pair = ifelse(Var1 < Var2, paste(Var1, Var2, sep = "_"), paste(Var2, Var1, sep = "_"))) %>%
+  distinct(Pair)
+
 nrow(LUPINE_interactions)
 nrow(Gold_interactions)
-
-LUPINE_interactions <- extract_interactions(network)
-nrow(LUPINE_interactions) # 692
-LUPINE_interactions <- LUPINE_interactions %>%
-  rowwise() %>%
-  mutate(
-    OrderedVar1 = min(Var1, Var2), # Assign smaller name to OrderedVar1
-    OrderedVar2 = max(Var1, Var2)  # Assign larger name to OrderedVar2
-  ) %>%
-  ungroup() %>%
-  select(OrderedVar1, OrderedVar2) %>% # Keep only ordered pairs
-  distinct() %>%
-  mutate(Interaction_name = paste0(OrderedVar1, "-", OrderedVar2))
-nrow(LUPINE_interactions) # 346
-
-Gold_interactions <- extract_interactions(goldstandard)
-nrow(Gold_interactions) # 336
-Gold_interactions <- Gold_interactions %>%
-  rowwise() %>%
-  mutate(
-    OrderedVar1 = min(Var1, Var2), # Assign smaller name to OrderedVar1
-    OrderedVar2 = max(Var1, Var2)  # Assign larger name to OrderedVar2
-  ) %>%
-  ungroup() %>%
-  select(OrderedVar1, OrderedVar2) %>% # Keep only ordered pairs
-  distinct() %>%
-  mutate(Interaction_name = paste0(OrderedVar1, "-", OrderedVar2))
-nrow(Gold_interactions) # 168
-
-intersect(LUPINE_interactions$Interaction_name, Gold_interactions$Interaction_name)
+intersect_interactions <- length(intersect(LUPINE_interactions$Pair, Gold_interactions$Pair)) # 11
 
 library(VennDiagram)
 
 # Create a Venn diagram
 venn.plot <- draw.pairwise.venn(
-  area1 = length(LUPINE_interactions$Interaction_name),
-  area2 = length(Gold_interactions$Interaction_name),
-  cross.area = length(intersect(LUPINE_interactions$Interaction_name, Gold_interactions$Interaction_name)),
+  area1 = nrow(LUPINE_interactions),
+  area2 = nrow(Gold_interactions),
+  cross.area = intersect_interactions,
   category = c("LUPINE predicted network", "Gold standard network"),
   fill = c("blue", "green"),
   alpha = 0.5
