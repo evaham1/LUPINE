@@ -25,6 +25,18 @@ network_1_data_sorted <- network_1_data %>%
   mutate(Pair = ifelse(Var1 < Var2, paste(Var1, Var2, sep = "_"), paste(Var2, Var1, sep = "_")))
 length(unique(network_1_data_sorted$Pair)) # 4950 - now we have covered all pairwise undirected interactions
 
+network_interactions <- network_1_data_sorted %>%
+  group_by(Pair) %>%
+  summarize(Interactions = sum(Value), .groups = "drop")
+table(network_interactions$Interactions)
+# 0    1    2
+# 4782  161    7
+two_way_interactions <- network_interactions %>%
+  filter(Interactions == 2)  # Two-way means both directions (Value == 1) are present
+two_way_interactions$Pair
+# [1] "G10_G37" "G10_G44" "G44_G62" "G54_G55" "G54_G82" "G65_G66" "G67_G69"
+
+
 # aggregate by Pair and set 'Value' to 1 if there is any interaction in either direction
 network_undirected <- network_1_data_sorted %>%
   group_by(Pair) %>%
