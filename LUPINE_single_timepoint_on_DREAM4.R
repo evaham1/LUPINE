@@ -104,7 +104,10 @@ Gold_interactions <- extract_interactions(goldstandard) %>%
 
 nrow(LUPINE_interactions)
 nrow(Gold_interactions)
-intersect_interactions <- length(intersect(LUPINE_interactions$Pair, Gold_interactions$Pair)) # 11
+intersect_interactions <- intersect(LUPINE_interactions$Pair, Gold_interactions$Pair)
+# "G13_G5"  "G14_G5"  "G11_G85" "G25_G37" "G26_G31" "G28_G64" "G37_G62" "G46_G50" "G49_G83" "G61_G63" "G98_G99"
+
+intersect(two_way_interactions$Pair, intersect_interactions)
 
 library(VennDiagram)
 
@@ -112,7 +115,7 @@ library(VennDiagram)
 venn.plot <- draw.pairwise.venn(
   area1 = nrow(LUPINE_interactions),
   area2 = nrow(Gold_interactions),
-  cross.area = intersect_interactions,
+  cross.area = length(intersect_interactions),
   category = c("LUPINE predicted network", "Gold standard network"),
   fill = c("blue", "green"),
   alpha = 0.5
