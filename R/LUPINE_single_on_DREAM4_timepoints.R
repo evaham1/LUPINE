@@ -5,6 +5,7 @@ library(LUPINE)
 library(BiocParallel)
 library(igraph)
 library(pheatmap)
+library(ggplot2)
 
 ### Read in ground-truth network
 goldstandard <- readRDS("~/dev/repos/LUPINE/data/DREAM4/DREAM4_network_1_goldstandard.RDS")
@@ -80,10 +81,19 @@ rownames(dst) <- c("Goldstandard", "T1", "T5", "T10", "T15", "T21")
 colnames(dst) <- c("Goldstandard", "T1", "T5", "T10", "T15", "T21")
 pheatmap(dst, cluster_rows = FALSE, cluster_cols = FALSE)
 
-dst <- distance_matrix(list(network_t1, network_t5, network_t10, network_t15, network_t21))
-rownames(dst) <- c("T1", "T5", "T10", "T15", "T21")
-colnames(dst) <- c("T1", "T5", "T10", "T15", "T21")
-pheatmap(dst, cluster_rows = FALSE, cluster_cols = FALSE)
+fit <- data.frame(cmdscale(dst, k = 3))
+p2 <- ggplot(fit, aes(x = X1, y = X2)) +
+  geom_point(size = 3) +
+  geom_text(aes(label = rownames(fit)),
+            parse = TRUE, hjust = 0.5, vjust = 1.5,
+            show.legend = FALSE)
+p2
+
+# no goldstandard
+# dst <- distance_matrix(list(network_t1, network_t5, network_t10, network_t15, network_t21))
+# rownames(dst) <- c("T1", "T5", "T10", "T15", "T21")
+# colnames(dst) <- c("T1", "T5", "T10", "T15", "T21")
+# pheatmap(dst, cluster_rows = FALSE, cluster_cols = FALSE)
 
 ### Compare networks - Mantel test
 mantel_res <- MantelTest_matrix(list(goldstandard, network_t1, network_t5, network_t10, network_t15, network_t21))
@@ -91,6 +101,7 @@ rownames(mantel_res) <- c("Goldstandard", "T1", "T5", "T10", "T15", "T21")
 colnames(mantel_res) <- c("Goldstandard", "T1", "T5", "T10", "T15", "T21")
 pheatmap(mantel_res, cluster_rows = FALSE, cluster_cols = FALSE)
 
+# no goldstandard
 mantel_res <- MantelTest_matrix(list(network_t1, network_t5, network_t10, network_t15, network_t21))
 rownames(mantel_res) <- c("T1", "T5", "T10", "T15", "T21")
 colnames(mantel_res) <- c("T1", "T5", "T10", "T15", "T21")
@@ -100,59 +111,24 @@ pheatmap(mantel_res, cluster_rows = FALSE, cluster_cols = FALSE)
 ### Compare network to ground truth - IVI values
 net_gold <- graph_from_adjacency_matrix(goldstandard, mode = "undirected")
 ivi_gold <- influential::ivi(net_gold)
-net_lupine <- graph_from_adjacency_matrix(network, mode = "undirected")
-ivi_lupine <- influential::ivi(net_lupine)
+net_t1 <- graph_from_adjacency_matrix(network_t1, mode = "undirected")
+ivi_t1 <- influential::ivi(net_t1)
+net_t5 <- graph_from_adjacency_matrix(network_t5, mode = "undirected")
+ivi_t5 <- influential::ivi(net_t5)
+net_t10 <- graph_from_adjacency_matrix(network_t10, mode = "undirected")
+ivi_t10 <- influential::ivi(net_t10)
+net_t15 <- graph_from_adjacency_matrix(network_t15, mode = "undirected")
+ivi_t15 <- influential::ivi(net_t15)
+net_t21 <- graph_from_adjacency_matrix(network_t21, mode = "undirected")
+ivi_t21 <- influential::ivi(net_t21)
+IVI_comb <- rbind(ivi_gold, ivi_t1, ivi_t5, ivi_t10, ivi_t15, ivi_t21)
+pca_ivi <- mixOmics::pca(IVI_comb)
+fit1 <- data.frame(pca_ivi$variates$X) %>% cbind(name = pca_ivi$names$sample)
 
-compare_ivi <- data.frame(Goldstandard = ivi_gold,
-                          LUPINE_output = ivi_lupine)
-compare_ivi <- compare_ivi %>%
-  mutate(Difference = abs(Goldstandard - LUPINE_output))
-mean(compare_ivi$Difference)
-
-tail(ivi_gold[order(ivi_gold)])
-tail(ivi_lupine[order(ivi_lupine)])
-
-## try plotting to see difference
-plot(net_gold)
-plot(net_lupine)
-
-# Venn diagram of interactions?
-sum(network == 1, na.rm = TRUE) / 2 # 346
-sum(goldstandard == 1, na.rm = TRUE) / 2 # 168
-
-extract_interactions <- function(mat) {
-  interactions <- which(mat == 1, arr.ind = TRUE)
-  data.frame(
-    Var1 = rownames(mat)[interactions[, 1]],
-    Var2 = colnames(mat)[interactions[, 2]]
-  )
-}
-
-LUPINE_interactions <- extract_interactions(network) %>%
-  mutate(Pair = ifelse(Var1 < Var2, paste(Var1, Var2, sep = "_"), paste(Var2, Var1, sep = "_"))) %>%
-  distinct(Pair)
-
-Gold_interactions <- extract_interactions(goldstandard) %>%
-  mutate(Pair = ifelse(Var1 < Var2, paste(Var1, Var2, sep = "_"), paste(Var2, Var1, sep = "_"))) %>%
-  distinct(Pair)
-
-nrow(LUPINE_interactions)
-nrow(Gold_interactions)
-intersect_interactions <- length(intersect(LUPINE_interactions$Pair, Gold_interactions$Pair)) # 11
-
-library(VennDiagram)
-
-# Create a Venn diagram
-venn.plot <- draw.pairwise.venn(
-  area1 = nrow(LUPINE_interactions),
-  area2 = nrow(Gold_interactions),
-  cross.area = intersect_interactions,
-  category = c("LUPINE predicted network", "Gold standard network"),
-  fill = c("blue", "green"),
-  alpha = 0.5
-)
-
-
-
-
+p1 <- ggplot(fit1, aes(x = PC1, y = PC2)) +
+  geom_point() +
+  geom_text(aes(label = rownames(fit1)),
+            parse = TRUE, hjust = 0.5, vjust = 1.5,
+            show.legend = FALSE)
+p1
 
