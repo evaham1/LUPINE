@@ -21,43 +21,44 @@ LUPINE_multiple_timepoint <- function(data,
   var_names <- colnames(data_final_timepoint)
   nVar <- dim(data)[2]
 
-  # pairwise taxa combinations
-  nOTU <- length(var_names)
-  len <- nOTU * (nOTU - 1) / 2
-  taxa1 <- unlist(lapply(1:nOTU, function(i) rep(i, (nOTU - i))))
-  taxa2 <- unlist(lapply(2:nOTU, function(i) seq(i, nOTU, 1)))
+  # Generate all pairwise combinations of variables for correlation analysis
+  len <- nVar * (nVar - 1) / 2
+  taxa1 <- unlist(lapply(1:nVar, function(i) rep(i, (nVar - i))))
+  taxa2 <- unlist(lapply(2:nVar, function(i) seq(i, nVar, 1)))
 
-  # Initialisation
-  pcor <- matrix(NA, nrow = nOTU, ncol = nOTU)
-  pcor.pval <- matrix(NA, nrow = nOTU, ncol = nOTU)
+  # Initialize matrices to store partial correlation coefficients and p-values
+  pcor <- matrix(NA, nrow = nVar, ncol = nVar)
+  pcor.pval <- matrix(NA, nrow = nVar, ncol = nVar)
   colnames(pcor) <- colnames(pcor.pval) <- var_names
   rownames(pcor) <- rownames(pcor.pval) <- var_names
+
+  # Perform dimensionality reduction
+  loadings_m <- PLS_approx(data, dim(data)[3], ncomp = ncomp, taxa_names = var_names)
 
   if (is.null(lib_size) & !is.transformed) {
     # Creating library size by summing taxa counts per sample and time point
     lib_size <- apply(data, c(1, 3), sum)
   }
-  # Extract count array after excluding taxa for current day
-  data_day_f <- data[, var_names, dim(data)[3]]
 
-  loadings_m <- PLS_approx(data, dim(data)[3], ncomp = ncomp, taxa_names = var_names)
+  # Extract count array after excluding taxa for current day
+  # data_day_f <- data[, var_names, dim(data)[3]]
 
 
   for (i in 1:len) {
     # print(i)
     loading_tmp <- loadings_m
     loading_tmp[c(taxa1[i], taxa2[i]), ] <- 0
-    u1 <- scale(data_day_f, center = TRUE, scale = TRUE) %*% loading_tmp
+    u1 <- scale(data_final_timepoint, center = TRUE, scale = TRUE) %*% loading_tmp
     if (!is.transformed) {
       ##** LUPINE with counts**##
       # principal component regression on log counts+1 with an offset for library size
-      r_i <- lm(log(data_day_f[, taxa1[i]] + 1) ~ u1, offset = log(lib_size[, dim(data)[3]]))
-      r_j <- lm(log(data_day_f[, taxa2[i]] + 1) ~ u1, offset = log(lib_size[, dim(data)[3]]))
+      r_i <- lm(log(data_final_timepoint[, taxa1[i]] + 1) ~ u1, offset = log(lib_size[, dim(data)[3]]))
+      r_j <- lm(log(data_final_timepoint[, taxa2[i]] + 1) ~ u1, offset = log(lib_size[, dim(data)[3]]))
     } else {
       ##** LUPINE with clr**##
       # principal component regression on clr
-      r_i <- lm(data_day_f[, taxa1[i]] ~ u1)
-      r_j <- lm(data_day_f[, taxa2[i]] ~ u1)
+      r_i <- lm(data_final_timepoint[, taxa1[i]] ~ u1)
+      r_j <- lm(data_final_timepoint[, taxa2[i]] ~ u1)
     }
     # partial correlation calculation
     pcor[taxa1[i], taxa2[i]] <- pcor[taxa2[i], taxa1[i]] <- cor.test(r_i$residuals,
