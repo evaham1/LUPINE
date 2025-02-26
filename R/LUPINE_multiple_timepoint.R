@@ -1,7 +1,7 @@
 #' LUPINE for longitudinal data
 #'
-#' @param data A 3D array of counts or transformed data with dimensions samples x taxa x time points
-#' @param day The time point for which the correlations are calculated
+#' @param data A 3D array of counts or transformed data with dimensions samples x taxa x time points. The last timepoint in this data will be considered the 'current' one
+#' for which the correlations are calculated
 #' @param excluded_taxa A list of taxa to be excluded at each time point
 #' @param is.transformed A logical indicating whether the data is transformed or not
 #' @param lib_size A matrix of library sizes for each sample and time point
@@ -11,17 +11,19 @@
 #' @export
 #'
 LUPINE_multiple_timepoint <- function(data,
-                                      day,
                                       excluded_taxa = NULL,
                                       is.transformed = FALSE,
                                       lib_size = NULL,
                                       ncomp = 1) {
+
+  # Extract the data from the final timepoint
+  data_final_timepoint <- data[, , dim(data)[3]] # equivalent to count_day <- data[, , day]
+
   # Total number of taxa (p)
   nOTU_total <- dim(data)[2]
-  # Extract matrix for current time point
-  count_day <- data[, , day]
+
   # Extract taxa names after excluded taxa
-  taxa_names <- colnames(count_day)[!(colnames(count_day) %in% excluded_taxa[[day]])]
+  taxa_names <- colnames(data_final_timepoint)[!(colnames(data_final_timepoint) %in% excluded_taxa[[dim(data)[3]]])]
   # pairwise taxa combinations
   nOTU <- length(taxa_names)
   len <- nOTU * (nOTU - 1) / 2
@@ -39,9 +41,9 @@ LUPINE_multiple_timepoint <- function(data,
     lib_size <- apply(data, c(1, 3), sum)
   }
   # Extract count array after excluding taxa for current day
-  data_day_f <- data[, taxa_names, day]
+  data_day_f <- data[, taxa_names, dim(data)[3]]
 
-  loadings_m <- PLS_approx(data, day, ncomp = ncomp, taxa_names = taxa_names)
+  loadings_m <- PLS_approx(data, dim(data)[3], ncomp = ncomp, taxa_names = taxa_names)
 
 
   for (i in 1:len) {
@@ -52,8 +54,8 @@ LUPINE_multiple_timepoint <- function(data,
     if (!is.transformed) {
       ##** LUPINE with counts**##
       # principal component regression on log counts+1 with an offset for library size
-      r_i <- lm(log(data_day_f[, taxa1[i]] + 1) ~ u1, offset = log(lib_size[, day]))
-      r_j <- lm(log(data_day_f[, taxa2[i]] + 1) ~ u1, offset = log(lib_size[, day]))
+      r_i <- lm(log(data_day_f[, taxa1[i]] + 1) ~ u1, offset = log(lib_size[, dim(data)[3]]))
+      r_j <- lm(log(data_day_f[, taxa2[i]] + 1) ~ u1, offset = log(lib_size[, dim(data)[3]]))
     } else {
       ##** LUPINE with clr**##
       # principal component regression on clr
