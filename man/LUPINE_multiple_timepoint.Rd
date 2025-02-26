@@ -6,20 +6,21 @@
 \usage{
 LUPINE_multiple_timepoint(
   data,
-  is.transformed = FALSE,
   lib_size = NULL,
-  ncomp = 1
+  ncomp = 1,
+  BPPARAM = SerialParam()
 )
 }
 \arguments{
 \item{data}{A 3D array of counts or transformed data with dimensions samples x taxa x time points. The last timepoint in this data will be considered the 'current' one
 for which the correlations are calculated}
 
-\item{is.transformed}{A logical indicating whether the data is transformed or not}
-
-\item{lib_size}{A matrix of library sizes for each sample and time point}
+\item{lib_size}{A matrix of library sizes for each sample and time point, optional.
+If used, refression models will be run on log-transformed data with library size as an offset.}
 
 \item{ncomp}{The number of components to use for dimensionality reduction}
+
+\item{BPPARAM}{A \linkS4class{BiocParallelParam} object indicating the type of parallelisation}
 }
 \value{
 A list of correlations and p-values
