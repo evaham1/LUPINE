@@ -6,7 +6,6 @@
 \usage{
 LUPINE_multiple_timepoint(
   data,
-  excluded_taxa = NULL,
   is.transformed = FALSE,
   lib_size = NULL,
   ncomp = 1
@@ -15,8 +14,6 @@ LUPINE_multiple_timepoint(
 \arguments{
 \item{data}{A 3D array of counts or transformed data with dimensions samples x taxa x time points. The last timepoint in this data will be considered the 'current' one
 for which the correlations are calculated}
-
-\item{excluded_taxa}{A list of taxa to be excluded at each time point}
 
 \item{is.transformed}{A logical indicating whether the data is transformed or not}
 
