@@ -10,7 +10,7 @@ Install the GitHub version with:
 
 ```{r}
 # install.packages("devtools")
-devtools::install_github("https://github.com/SarithaKodikara/LUPINE")
+devtools::install_github("https://github.com/evaham1/LUPINE")
 ```
 
 ## Vignette
